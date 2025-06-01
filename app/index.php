@@ -1,5 +1,6 @@
 <?php
 // filepath: /home/dev/projects/php/bikcraft/app/index.php
+require_once __DIR__ . '/core/dotenv.php';
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">

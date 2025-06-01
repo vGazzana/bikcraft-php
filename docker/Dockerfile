@@ -45,18 +45,21 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# 2) Define o diretório de trabalho dentro do container
+# 2) Instala Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# 3) Define o diretório de trabalho dentro do container
 WORKDIR /var/www/html
 
-# 3) Copia todo o código-fonte da pasta “app/” para dentro de /var/www/html
+# 4) Copia todo o código-fonte da pasta “app/” para dentro de /var/www/html
 COPY app/ ./
 
-# 4) Ajusta permissões para www-data (usuário que roda o PHP-FPM)
+# 5) Ajusta permissões para www-data (usuário que roda o PHP-FPM)
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
 
-# 5) Expõe a porta do PHP-FPM
+# 6) Expõe a porta do PHP-FPM
 EXPOSE 9000
 
-# 6) Comando padrão ao iniciar o container
+# 7) Comando padrão ao iniciar o container
 CMD ["php-fpm"]
