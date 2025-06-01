@@ -1,0 +1,63 @@
+services:
+  # -------------------------------------------------------------------
+  # Serviço “app”: PHP-FPM (build a partir de docker/Dockerfile)
+  # -------------------------------------------------------------------
+  app:
+    build:
+      context: .                     # contexto de build = raiz do projeto
+      dockerfile: ./docker/Dockerfile
+    image: bikcraft:latest
+    container_name: php_app
+    working_dir: /var/www/html
+    volumes:
+      - ./app:/var/www/html           # monta seu código-fonte “app/” no container
+      - ./.env:/var/www/html/.env     # monta o arquivo .env como somente leitura
+    depends_on:
+      - mysql
+      - mailcatcher
+
+  # -------------------------------------------------------------------
+  # Serviço “mysql”: banco de dados
+  # -------------------------------------------------------------------
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ALLOW_EMPTY_PASSWORD: ${MYSQL_ALLOW_EMPTY_PASSWORD}
+    volumes:
+      - bikcraft_db:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  # -------------------------------------------------------------------
+  # Serviço “mailcatcher”: captura e-mails para desenvolvimento
+  # -------------------------------------------------------------------
+  mailcatcher:
+    image: schickling/mailcatcher:latest
+    container_name: mailcatcher
+    restart: unless-stopped
+    ports:
+      - "1025:1025"   # SMTP
+      - "1080:1080"   # UI Web (http://localhost:1080)
+
+  # -------------------------------------------------------------------
+  # Serviço “nginx”: servidor web que encaminha PHP para o FPM
+  # -------------------------------------------------------------------
+  nginx:
+    image: nginx:latest
+    container_name: nginx_web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./app:/var/www/html:ro         # monta “app/” como somente leitura para o Nginx
+    depends_on:
+      - app
+
+volumes:
+  bikcraft_db:
