@@ -1,0 +1,3 @@
+<header>
+    Application Header
+</header>
